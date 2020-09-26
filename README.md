@@ -86,13 +86,16 @@ jgtz nameOfExistingLabel - jumps to the line with that label if oth mempory is g
 
 ## calculating abs value
 
+```
+
 read 0
 jgtz skip
 mult =-1
 skip:
 write 0
-
+```
 ## calculating modulo
+```
 
 read 1
 read 2
@@ -102,6 +105,7 @@ mult 2
 mult =-1
 add 1
 write 0
+```
 
 
 
