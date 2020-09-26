@@ -33,12 +33,11 @@ namespace RamMachine
 
         public event EventHandler<RamMachineOutputArgs> OnOutput = delegate { };
         public event EventHandler OnEnded = delegate { };
+
         public ReadOnlyCollection<long?> Memory => ram.AsReadOnly();
-   
         public long[] GetOutput() => output.ToArray();
         public ReadOnlyCollection<RamMachineCommand> Commands => Array.AsReadOnly(commands);
         public bool HasEnded => Point >= commands.Length;
-
         public uint InvokedLimit { get; set; } = 5000000;
 
         public RamMachineRuntime(IEnumerable<RamMachineCommand> commands)
@@ -85,10 +84,8 @@ namespace RamMachine
                 if (!DoNext())
                     return false;
             }
-            return true;
-           
-        }
-        
+            return true;          
+        }      
         public bool DoNext()
         {
             if(Point>=commands.Length)

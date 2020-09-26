@@ -74,7 +74,7 @@
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="RamMachine\ICommandController.cs" />
+    <Compile Include="RamMachine\CommandBehavior.cs" />
     <Compile Include="RamMachine\IRam.cs" />
     <Compile Include="RamMachine\RamMachineCommand.cs" />
     <Compile Include="RamMachine\RamMachineController.cs" />

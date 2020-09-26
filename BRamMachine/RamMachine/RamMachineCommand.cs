@@ -34,11 +34,8 @@ namespace RamMachine
         }
         public static IEnumerable<RamMachineCommand> Parse(string text)
         {
-
             Regex regex = new Regex(@"#.*?$",RegexOptions.Multiline);//getting rid of comments
             text = regex.Replace(text, "");
-
-
             int index = 0;
             foreach(string line in Regex.Split(text,"\n|(?<=:)"))
             {

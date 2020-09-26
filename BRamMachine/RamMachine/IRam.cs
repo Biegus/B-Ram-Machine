@@ -6,13 +6,13 @@ namespace RamMachine
 {
     public interface IRam
     {
-         void Set(int place, long val);
+        void Set(int place, long val);
         long Get(int place);
-         void Write(long value);
+        void Write(long value);
         long Read();
-         void Jump(string place);
-         void Halt();
-         void PushLabel(string place);
+        void Jump(string place);
+        void Halt();
+        void PushLabel(string place);
         uint GetPoint();
     }
 }

@@ -9,8 +9,6 @@ namespace RamMachine
         public abstract void Do(RamMachineCommand command, IRam ram);
         public virtual bool IsArgumentCorrect(string argument) => true;
         public virtual bool PreInvoke() => false;
-      
-       
     }
     public abstract partial class CommandBehavior
     {
@@ -21,20 +19,13 @@ namespace RamMachine
                 return RamMachineHelper.CheckPreArgument(argument);
                     
             }
-
             public override void Do(RamMachineCommand command, IRam ram)
             {
-               
                 RamMachineHelper.DoWithDeepLv(command.Argument, (ramEl, val) => ramEl.Set(0, val), ram);
-
             }
-
-           
         }
         public class JumpCommand : CommandBehavior
         {
-
-         
             public override void Do(RamMachineCommand command, IRam ram)
             {
                 ram.Jump(command.Argument);
@@ -45,7 +36,6 @@ namespace RamMachine
             public override bool IsArgumentCorrect(string argument)
             {
                 return argument.Equals(string.Empty);
-
             }
             public override void Do(RamMachineCommand command, IRam ram)
             {
@@ -61,7 +51,6 @@ namespace RamMachine
             public override bool IsArgumentCorrect(string argument)
             {
                 return RamMachineHelper.CheckPreArgument(argument);
-
             }
             public override void Do(RamMachineCommand command, IRam ram)
             {
@@ -76,8 +65,7 @@ namespace RamMachine
 
             }
             public override void Do(RamMachineCommand command, IRam ram)
-            {
-               
+            {               
                 var splited = RamMachineHelper.SplitToPreArgument(command.Argument);
                 long val = long.Parse(splited.argument);
                 switch (splited.pre)
@@ -93,7 +81,6 @@ namespace RamMachine
             public override bool IsArgumentCorrect(string argument)
             {
                 return RamMachineHelper.CheckPreArgument(argument, new char?[] { '*', null });
-
             }
             public override void Do(RamMachineCommand command, IRam ram)
             {
@@ -104,20 +91,15 @@ namespace RamMachine
                     case null: ram.Set(val, ram.Get(0)); break;
                     case '*': ram.Set((int)ram.Get((int)val), ram.Get(0)); break;            
                 }
-
-            }
-         
-
+            }        
         }
         public class JumpIfCommand : CommandBehavior
         {
             private Func<long, bool> func;
-
             public JumpIfCommand(Func<long, bool> func)
             {
                 this.func = func;
             }
-
             public override void Do(RamMachineCommand command, IRam ram)
             {
                 if(func(ram.Get(0)))
@@ -126,14 +108,11 @@ namespace RamMachine
                 }
             }
         }
-
-
         public class MathOperandCommand : CommandBehavior
         {
             public override bool IsArgumentCorrect(string argument)
             {
                 return RamMachineHelper.CheckPreArgument(argument);
-
             }
             private Func<long, long, long> func;
             public MathOperandCommand(Func<long, long, long> func)
@@ -153,15 +132,11 @@ namespace RamMachine
             public override bool IsArgumentCorrect(string argument)
             {
                 return argument.Equals(string.Empty);
-
             }
             public override void Do(RamMachineCommand command, IRam ram)
             {
                 ram.Halt();
             }
         }
-
-
-
     }
 }

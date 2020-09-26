@@ -70,9 +70,6 @@ namespace RamMachine
             }
             
         }
-        static RamMachineController()
-        {
-
-        }
+      
     }
 }
