@@ -2,7 +2,7 @@
 The Ram Machine interpreter and editor
 ![](https://github.com/Biegus/B-Ram-Machine/blob/master/Images/RamMachineScreen.png)
 
-## [Stable bulid version](https://github.com/Biegus/B-Ram-Machine/releases)
+## [Stable bulid version](https://github.com/Biegus/B-Ram-Machine/releases/tag/0.4.2.1)
 
 # Documentation
 
