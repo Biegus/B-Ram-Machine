@@ -21,7 +21,7 @@ namespace RamMachine
         } 
         public static bool CheckPreArgument(string argument,char?[] acceptable=null)
         {
-            if(argument.Equals(string.Empty)||(argument.Length==1&& !char.IsNumber(argument[0])||(argument.Length>1&&!char.IsNumber(argument[1]))))
+            if(argument.Equals(string.Empty)||(argument.Length==1&& !char.IsNumber(argument[0])||(argument.Length>1&&(!char.IsNumber(argument[1])&&argument[1]!='-'&&argument[1]!='+'))))
             {
                 return false;
             }
