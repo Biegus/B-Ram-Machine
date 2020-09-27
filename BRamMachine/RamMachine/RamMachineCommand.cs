@@ -15,7 +15,7 @@ namespace RamMachine
         {
             if (!RamMachineController.Exist(type))
             {
-                throw new RamMachineParserException(-1,$"Command {type} doesn't exist");
+                throw new RamMachineParserException(0,$"Command {type} doesn't exist");
             }
           
             (Type, Argument) = (type, argument);
@@ -24,7 +24,7 @@ namespace RamMachine
         {
             return $"{Type} {Argument}";
         }
-        public void Invoke(IRam ram)
+        public void Invoke(IRamMachine ram)
         {
             RamMachineController.Invoke(this, ram);
         }
@@ -45,19 +45,21 @@ namespace RamMachine
                 string[] splited = Regex.Split(trimed, " ").Where(item => item != string.Empty).Select(item=>item.Trim()).ToArray();
                 string type = splited[0];
                 string argument = "";
+                var lineNumber = RamMachine.RamMachineHelper.GetLineNumber(text, line);
                 if (splited.Length > 1)
                 {
                     argument = splited[1];
                    if( (RamMachineController.GetCommand(type)?.IsArgumentCorrect(argument)==false))
                     {
 
-                        throw new RamMachineParserException(index,$"\"{argument}\" is not correct argument for \"{type}\" at {index+1} line");
+                       
+                        throw new RamMachineParserException(lineNumber, $"\"{argument}\" is not correct argument for \"{type}\" at line {lineNumber} ");
                     }
                 }
                     
                 if(RamMachine.RamMachineController.Exist((type))==false)
                 {
-                    throw new RamMachineParserException(index, $"Unknown command ({type}) at {index+1} line");
+                    throw new RamMachineParserException(lineNumber, $"Unknown command ({type}) at {lineNumber} line");
                 }
                 yield return new RamMachineCommand(type,argument);
                 index++;

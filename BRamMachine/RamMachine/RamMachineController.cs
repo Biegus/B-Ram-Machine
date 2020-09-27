@@ -49,7 +49,7 @@ namespace RamMachine
                 return (type.EndsWith(":") ? labelCommand : null);
             }
         }
-        public static void Invoke(RamMachineCommand command, IRam ram)
+        public static void Invoke(RamMachineCommand command, IRamMachine ram)
         {
             if (ram is null)
             {
@@ -66,7 +66,7 @@ namespace RamMachine
             
             catch(Exception exception) when (!(exception is RamMachineRuntimeException))
             {
-                throw new RamMachineRuntimeException(ram.GetPoint(),$"Unexpected exception had occured during runtime ({command}) at line {ram.GetPoint()}", exception);
+                throw new RamMachineRuntimeException(RamMachineHelper.GetLineNumber(ram.GetRaw(), commands.ToString()), $"Unexpected exception had occured during runtime ({command})", exception);
             }
             
         }

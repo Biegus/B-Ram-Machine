@@ -76,6 +76,7 @@
     </Compile>
     <Compile Include="RamMachine\CommandBehavior.cs" />
     <Compile Include="RamMachine\IRam.cs" />
+    <Compile Include="RamMachine\ParsedCode.cs" />
     <Compile Include="RamMachine\RamMachineCommand.cs" />
     <Compile Include="RamMachine\RamMachineController.cs" />
     <Compile Include="RamMachine\RamMachineHelper.cs" />

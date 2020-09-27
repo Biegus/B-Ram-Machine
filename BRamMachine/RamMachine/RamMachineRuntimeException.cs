@@ -11,5 +11,9 @@ namespace RamMachine
         {
             Line = line;
         }
+        public override string ToString()
+        {
+            return $"{Message} at line {Line}";
+        }
     }
 }

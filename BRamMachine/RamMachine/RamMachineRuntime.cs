@@ -6,7 +6,7 @@ using System.Collections.ObjectModel;
 
 namespace RamMachine
 {
-    public class RamMachineRuntime : IRam
+    public class RamMachineRuntime : IRamMachine
     {
         public class RamMachineOutputArgs : EventArgs
         {
@@ -22,13 +22,14 @@ namespace RamMachine
         }
 
         private readonly Dictionary<string, uint> labels = new Dictionary<string, uint>();
-        private RamMachineCommand[] commands;
+       
         private readonly List<long?> ram = new List<long?>();
         
         private readonly Queue<long> output = new Queue<long>();
         private readonly Queue<long> input = new Queue<long>();
         private bool registerEnd = false;
         public uint Point { get; set; } = 0;
+        public ParsedRamCode Code { get; }
         public uint LineInvoked { get; set; } = 0;
 
         public event EventHandler<RamMachineOutputArgs> OnOutput = delegate { };
@@ -36,18 +37,18 @@ namespace RamMachine
 
         public ReadOnlyCollection<long?> Memory => ram.AsReadOnly();
         public long[] GetOutput() => output.ToArray();
-        public ReadOnlyCollection<RamMachineCommand> Commands => Array.AsReadOnly(commands);
-        public bool HasEnded => Point >= commands.Length;
+        
+        public bool HasEnded => Point >= Code.Commands.Count;
         public uint InvokedLimit { get; set; } = 5000000;
 
-        public RamMachineRuntime(IEnumerable<RamMachineCommand> commands)
+        public RamMachineRuntime(ParsedRamCode code)
         {
-            this.commands = commands.ToArray();
+            this.Code = code;
             PrepareInvoke();
         }
-        public static RamMachineRuntime Run(IEnumerable<RamMachineCommand> commands,params long[] input)
+        public static RamMachineRuntime Run(ParsedRamCode code,params long[] input)
         {
-            var runtime = new RamMachineRuntime(commands);
+            var runtime = new RamMachineRuntime(code);
             runtime.DoUntillEnd();
             runtime.Input(((IEnumerable<long>)input)??Enumerable.Empty<long>());
             return runtime;
@@ -55,10 +56,10 @@ namespace RamMachine
         }
         private void PrepareInvoke()
         {
-            while(Point<commands.Length)
+            while(Point<Code.Commands.Count)
             {
-                if (RamMachineController.GetCommand(commands[Point].Type).PreInvoke())
-                    RamMachineController.Invoke(commands[Point], this);
+                if (RamMachineController.GetCommand(Code.Commands[(int)Point].Type).PreInvoke())
+                    RamMachineController.Invoke(Code.Commands[(int)Point], this);
                 Point++;
             }
             Point=0;
@@ -88,7 +89,7 @@ namespace RamMachine
         }      
         public bool DoNext()
         {
-            if(Point>=commands.Length)
+            if(Point>=Code.Commands.Count)
             {
                 if(!registerEnd)
                 {
@@ -99,8 +100,8 @@ namespace RamMachine
                 
             }
             registerEnd = false;
-            if (RamMachineController.GetCommand(commands[Point].Type).PreInvoke() == false)
-                RamMachineController.Invoke(commands[Point], this);
+            if (RamMachineController.GetCommand(Code.Commands[(int)Point].Type).PreInvoke() == false)
+                RamMachineController.Invoke(Code.Commands[(int)Point], this);
             Point++;
             LineInvoked++;
             if(InvokedLimit>0&&LineInvoked>InvokedLimit)
@@ -113,7 +114,7 @@ namespace RamMachine
         {
             while (DoNext()) { }  
         }
-        long IRam.Get(int place)
+        long IRamMachine.Get(int place)
         {
             if(place<ram.Count&&ram[(int)place]!=null)
             {
@@ -121,11 +122,11 @@ namespace RamMachine
             }
             else
             {
-                throw new RamMachineRuntimeException(Point,$"Trying to get unready value at {Point+1} line ({commands[Point]})",null);
+                throw new RamMachineRuntimeException(RamMachineHelper.GetLineNumber(Code.Raw,Code.Commands[(int)Point].ToString()),$"Trying to get unready value ({Code.Commands[(int)Point]})",null);
             }
         }
 
-        void IRam.Set(int place, long val)
+        void IRamMachine.Set(int place, long val)
         {
            if(place>=ram.Count)
             {
@@ -134,35 +135,40 @@ namespace RamMachine
             ram[(int)place] = val;
 
         }
-        long IRam.Read()
+        long IRamMachine.Read()
         {
             if (input.Count == 0)
                 throw new RamMachineRuntimeException(0,"Input is empty", null);
             return input.Dequeue();
         }
-        void IRam.Write(long value)
+        void IRamMachine.Write(long value)
         {
             output.Enqueue(value);
             OnOutput(this, new RamMachineOutputArgs(this, value));
         }
-        void IRam.Jump(string label)
+        void IRamMachine.Jump(string label)
         {
             if (labels.ContainsKey(label) == false)
                 throw new RamMachineRuntimeException(Point,$"Undefined label ({label}) at {Point+1}",null);
             Point = labels[label];
         }
-        void IRam.PushLabel(string label)
+        void IRamMachine.PushLabel(string label)
         {
             labels[label] = Point;
         }
-        void IRam.Halt()
+        void IRamMachine.Halt()
         {
-            Point = (uint)(commands.Length - 1);
+            Point = (uint)(Code.Commands.Count - 1);
         }
 
-        uint IRam.GetPoint()
+        uint IRamMachine.GetPoint()
         {
             return Point;
+        }
+
+        string IRamMachine.GetRaw()
+        {
+            return Code.Raw;
         }
     }
 }

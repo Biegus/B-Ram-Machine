@@ -6,7 +6,7 @@ namespace RamMachine
 {
     public abstract partial class CommandBehavior
     {
-        public abstract void Do(RamMachineCommand command, IRam ram);
+        public abstract void Do(RamMachineCommand command, IRamMachine ram);
         public virtual bool IsArgumentCorrect(string argument) => true;
         public virtual bool PreInvoke() => false;
     }
@@ -19,14 +19,14 @@ namespace RamMachine
                 return RamMachineHelper.CheckPreArgument(argument);
                     
             }
-            public override void Do(RamMachineCommand command, IRam ram)
+            public override void Do(RamMachineCommand command, IRamMachine ram)
             {
                 RamMachineHelper.DoWithDeepLv(command.Argument, (ramEl, val) => ramEl.Set(0, val), ram);
             }
         }
         public class JumpCommand : CommandBehavior
         {
-            public override void Do(RamMachineCommand command, IRam ram)
+            public override void Do(RamMachineCommand command, IRamMachine ram)
             {
                 ram.Jump(command.Argument);
             }
@@ -37,7 +37,7 @@ namespace RamMachine
             {
                 return argument.Equals(string.Empty);
             }
-            public override void Do(RamMachineCommand command, IRam ram)
+            public override void Do(RamMachineCommand command, IRamMachine ram)
             {
                 ram.PushLabel(command.Type.Substring(0,command.Type.Length-1));
             }
@@ -52,7 +52,7 @@ namespace RamMachine
             {
                 return RamMachineHelper.CheckPreArgument(argument);
             }
-            public override void Do(RamMachineCommand command, IRam ram)
+            public override void Do(RamMachineCommand command, IRamMachine ram)
             {
                 RamMachineHelper.DoWithDeepLv(command.Argument, (ramEl, val) => ramEl.Write(val),  ram);
             }
@@ -64,7 +64,7 @@ namespace RamMachine
                 return RamMachineHelper.CheckPreArgument(argument, new char?[] { '*',null});
 
             }
-            public override void Do(RamMachineCommand command, IRam ram)
+            public override void Do(RamMachineCommand command, IRamMachine ram)
             {               
                 var splited = RamMachineHelper.SplitToPreArgument(command.Argument);
                 long val = long.Parse(splited.argument);
@@ -82,7 +82,7 @@ namespace RamMachine
             {
                 return RamMachineHelper.CheckPreArgument(argument, new char?[] { '*', null });
             }
-            public override void Do(RamMachineCommand command, IRam ram)
+            public override void Do(RamMachineCommand command, IRamMachine ram)
             {
                 var splited = RamMachineHelper.SplitToPreArgument(command.Argument);
                 int val = int.Parse(splited.argument);
@@ -100,7 +100,7 @@ namespace RamMachine
             {
                 this.func = func;
             }
-            public override void Do(RamMachineCommand command, IRam ram)
+            public override void Do(RamMachineCommand command, IRamMachine ram)
             {
                 if(func(ram.Get(0)))
                 {
@@ -119,7 +119,7 @@ namespace RamMachine
             {
                 this.func = func;
             }
-            public override void Do(RamMachineCommand command, IRam ram)
+            public override void Do(RamMachineCommand command, IRamMachine ram)
             {
                 RamMachineHelper.DoWithDeepLv(command.Argument, (ramEl, val)=>
                 {
@@ -133,7 +133,7 @@ namespace RamMachine
             {
                 return argument.Equals(string.Empty);
             }
-            public override void Do(RamMachineCommand command, IRam ram)
+            public override void Do(RamMachineCommand command, IRamMachine ram)
             {
                 ram.Halt();
             }

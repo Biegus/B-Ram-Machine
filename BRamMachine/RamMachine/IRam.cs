@@ -4,7 +4,7 @@ using System.Text;
 
 namespace RamMachine
 {
-    public interface IRam
+    public interface IRamMachine
     {
         void Set(int place, long val);
         long Get(int place);
@@ -14,5 +14,6 @@ namespace RamMachine
         void Halt();
         void PushLabel(string place);
         uint GetPoint();
+        string GetRaw();
     }
 }

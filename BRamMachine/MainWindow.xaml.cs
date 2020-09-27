@@ -68,8 +68,8 @@ namespace BRamMachine
             RamMachineRuntime runtime = null;
             try
             {
-                var parsed = RamMachineCommand.Parse(CodeTextBox.Text);
-                if(!parsed.Any())
+                var parsed = new ParsedRamCode(CodeTextBox.Text);
+                if(!parsed.Commands.Any())
                 {
                     WriteConsole("The code is empty", ConsoleStyles.Error);
                     return;
@@ -99,7 +99,7 @@ namespace BRamMachine
             }
             catch (RamMachineRuntimeException r)
             {
-                WriteConsole($"Runtime error has been thrown \"{r.Message} ({(r.InnerException?.Message ?? "")})\"", ConsoleStyles.Error);
+                WriteConsole($"Runtime error has been thrown \"{r} ({(r.InnerException?.Message ?? "")})\"", ConsoleStyles.Error);
                 return;
             }
 
