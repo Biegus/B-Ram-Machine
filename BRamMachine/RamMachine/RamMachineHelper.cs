@@ -28,10 +28,7 @@ namespace RamMachine
             acceptable =acceptable?? new char?[] { null, '=', '*','^' };
             return acceptable.Contains(SplitToPreArgument(argument).pre);
         }
-        public static uint GetLineNumber(string full, string line)
-        {
-            return (uint)full.Substring(0, full.IndexOf(line)).Count(item => item == '\n') + 1;
-        }
+      
         public static (char? pre, string argument) SplitToPreArgument(string original)
         {
             char? pre=null;

@@ -18,16 +18,17 @@ namespace BRamMachine
 {
     public partial class MainWindow : Window
     {
-        private static readonly string BasePath = $"{System.IO.Path.Combine(System.IO.Path.GetTempPath(), "BramMachineLast")}";
+        private static readonly string BasePath = $"{System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "BramMachineLast")}";
         private static readonly string Path = $" {System.IO.Path.Combine(BasePath,"save.txt")}";
         private RamMachineRuntime last = null;
         private string lineTemplate;
+        private bool lockSaving = false;
         public MainWindow()
         {
             InitializeComponent();
             lineTemplate = LineCounterLabel.Content.ToString();
             Load();
-            Saving();
+            _=Saving();
             CodeTextBox.Focus();
             RefreshLineCounter();
         }
@@ -39,7 +40,7 @@ namespace BRamMachine
         private async Task Saving()
         {
             Directory.CreateDirectory(BasePath);
-            while(true)
+            while(!lockSaving)
             {
                 await Task.Delay(TimeSpan.FromSeconds(5));
                 Save();
@@ -47,11 +48,27 @@ namespace BRamMachine
         }
         public void Save()
         {
-          
-            using(StreamWriter writer= new StreamWriter(new FileStream(Path,FileMode.Create)))
+
+            if (lockSaving)
+                return;
+            try
             {
-                writer.Write(CodeTextBox.Text);
+                using (StreamWriter writer = new StreamWriter(new FileStream(Path, FileMode.Create)))
+                {
+                    writer.Write(CodeTextBox.Text);
+                }
             }
+            catch
+            {
+
+                if(File.Exists(Path))
+                {
+                    File.Delete(Path);
+                }
+                WriteConsole("Something went wrong and file couldn't have been saved (propably your antivirus found that unsafe). Auto saving is now disabled", ConsoleStyles.Error);
+                lockSaving = true;
+            }
+           
         }
         public void WriteConsole(string text,Color color)
         {
@@ -68,8 +85,8 @@ namespace BRamMachine
             RamMachineRuntime runtime = null;
             try
             {
-                var parsed = new ParsedRamCode(CodeTextBox.Text);
-                if(!parsed.Commands.Any())
+                var parsed = RamMachineCommand.Parse(CodeTextBox.Text).ToArray();
+                if(!parsed.Any())
                 {
                     WriteConsole("The code is empty", ConsoleStyles.Error);
                     return;
@@ -82,7 +99,6 @@ namespace BRamMachine
                 WriteConsole($"Parser exception \"{exception.Message}\"",ConsoleStyles.Error);
                 return;
             }
-          
             try
             {
                 if (!string.IsNullOrEmpty(InputTextBox.Text))
@@ -92,7 +108,6 @@ namespace BRamMachine
             {
                 WriteConsole($"There's a problem while loading input \"{exception.Message}\"", ConsoleStyles.Error);
             }
-          
             try
             {
                 runtime.DoUntillEnd();
@@ -102,8 +117,6 @@ namespace BRamMachine
                 WriteConsole($"Runtime error has been thrown \"{r} ({(r.InnerException?.Message ?? "")})\"", ConsoleStyles.Error);
                 return;
             }
-
-           
             string raw = runtime.GetOutput().Aggregate(new StringBuilder(), (b, v) => b.Append($",{v}")).ToString();
             if (raw.Length > 0)
                 OutputTextBox.Text = raw.Substring(1);
@@ -111,20 +124,12 @@ namespace BRamMachine
                 OutputTextBox.Text = string.Empty;
             last = runtime;
             WriteConsole($"Finished {(OutputTextBox.Text.Equals(string.Empty)?"no output":$" result = ({OutputTextBox.Text})") }", ConsoleStyles.Finish);
-
-
-
         }
 
         private void Window_Closed(object sender, EventArgs e)
         {
             Save();
         }
-
-        
-       
-
-     
         private void RefreshLineCounter()
         {
             LineCounterLabel.Content = string.Format(lineTemplate, CodeTextBox.Text

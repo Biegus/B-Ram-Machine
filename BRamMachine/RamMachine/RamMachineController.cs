@@ -33,7 +33,7 @@ namespace RamMachine
 
             return commands.ContainsKey(type) || type.EndsWith(":");
         }
-        public static CommandBehavior GetCommand(string type)
+        public static CommandBehavior GetCommandBehavior(string type)
         {
             if (type is null)
             {
@@ -66,7 +66,7 @@ namespace RamMachine
             
             catch(Exception exception) when (!(exception is RamMachineRuntimeException))
             {
-                throw new RamMachineRuntimeException(RamMachineHelper.GetLineNumber(ram.GetRaw(), commands.ToString()), $"Unexpected exception had occured during runtime ({command})", exception);
+                throw new RamMachineRuntimeException(command.Line, $"Unexpected exception had occured during runtime ({command})", exception);
             }
             
         }

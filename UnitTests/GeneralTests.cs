@@ -12,7 +12,7 @@ namespace UnitTests
 read 0
 write 0
 ";
-            RamMachineRuntime runtime = new RamMachineRuntime(new ParsedRamCode(code));
+            RamMachineRuntime runtime = new RamMachineRuntime(RamMachineCommand.Parse(code));
             runtime.Input(5);
             runtime.DoUntillEnd();
             Assert.AreEqual(5, runtime.GetOutput()[0]);
@@ -36,7 +36,7 @@ sub =5
 store 5
 
 ";
-            var runtime = RamMachineRuntime.Run(new ParsedRamCode(code));
+            var runtime = RamMachineRuntime.Run(RamMachineCommand.Parse(code));
             Assert.AreEqual(3, runtime.Memory[2]);
             Assert.AreEqual(4, runtime.Memory[3]);
             Assert.AreEqual(1, runtime.Memory[4]);
@@ -55,7 +55,7 @@ start:  sub =1
 end:   write 0
 
 ";
-            var runtime = RamMachineRuntime.Run(new ParsedRamCode(code));
+            var runtime = RamMachineRuntime.Run(RamMachineCommand.Parse(code));
             Assert.AreEqual( 1, runtime.GetOutput().Length);
             Assert.AreEqual( 0, runtime.GetOutput()[0]);
         }
@@ -67,7 +67,7 @@ load =10 #comment
 #another one
 write 0
 ";
-            var runtime = RamMachineRuntime.Run(new ParsedRamCode(code));
+            var runtime = RamMachineRuntime.Run(RamMachineCommand.Parse(code));
             Assert.AreEqual(10, runtime.GetOutput()[0]);
           
         }
@@ -97,7 +97,7 @@ next:     load  2
           jump  evenLoop
 end:      write 1
 ";
-            RamMachineRuntime runtime = new RamMachineRuntime(new ParsedRamCode(code));
+            RamMachineRuntime runtime = new RamMachineRuntime(RamMachineCommand.Parse(code));
             runtime.Input(3);
             runtime.Input(8);
             runtime.Input(0);

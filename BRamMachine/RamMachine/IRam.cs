@@ -14,6 +14,6 @@ namespace RamMachine
         void Halt();
         void PushLabel(string place);
         uint GetPoint();
-        string GetRaw();
+     
     }
 }

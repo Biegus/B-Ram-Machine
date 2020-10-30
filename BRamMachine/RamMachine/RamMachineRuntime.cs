@@ -27,9 +27,10 @@ namespace RamMachine
         
         private readonly Queue<long> output = new Queue<long>();
         private readonly Queue<long> input = new Queue<long>();
+        private readonly RamMachineCommand[] commands;
         private bool registerEnd = false;
         public uint Point { get; set; } = 0;
-        public ParsedRamCode Code { get; }
+        public  ReadOnlyCollection<RamMachineCommand> Commands { get; }
         public uint LineInvoked { get; set; } = 0;
 
         public event EventHandler<RamMachineOutputArgs> OnOutput = delegate { };
@@ -38,15 +39,16 @@ namespace RamMachine
         public ReadOnlyCollection<long?> Memory => ram.AsReadOnly();
         public long[] GetOutput() => output.ToArray();
         
-        public bool HasEnded => Point >= Code.Commands.Count;
+        public bool HasEnded => Point >= Commands.Count;
         public uint InvokedLimit { get; set; } = 5000000;
 
-        public RamMachineRuntime(ParsedRamCode code)
+        public RamMachineRuntime(IEnumerable<RamMachineCommand> commands)
         {
-            this.Code = code;
+            this.commands = commands.ToArray();
+            Commands = new ReadOnlyCollection<RamMachineCommand>(this.commands);
             PrepareInvoke();
         }
-        public static RamMachineRuntime Run(ParsedRamCode code,params long[] input)
+        public static RamMachineRuntime Run(IEnumerable<RamMachineCommand> code,params long[] input)
         {
             var runtime = new RamMachineRuntime(code);
             runtime.DoUntillEnd();
@@ -56,10 +58,10 @@ namespace RamMachine
         }
         private void PrepareInvoke()
         {
-            while(Point<Code.Commands.Count)
+            while(Point<Commands.Count)
             {
-                if (RamMachineController.GetCommand(Code.Commands[(int)Point].Type).PreInvoke())
-                    RamMachineController.Invoke(Code.Commands[(int)Point], this);
+                if (RamMachineController.GetCommandBehavior(Commands[(int)Point].Type).PreInvoke())
+                    RamMachineController.Invoke(Commands[(int)Point], this);
                 Point++;
             }
             Point=0;
@@ -89,7 +91,7 @@ namespace RamMachine
         }      
         public bool DoNext()
         {
-            if(Point>=Code.Commands.Count)
+            if(Point>=Commands.Count)
             {
                 if(!registerEnd)
                 {
@@ -100,8 +102,8 @@ namespace RamMachine
                 
             }
             registerEnd = false;
-            if (RamMachineController.GetCommand(Code.Commands[(int)Point].Type).PreInvoke() == false)
-                RamMachineController.Invoke(Code.Commands[(int)Point], this);
+            if (RamMachineController.GetCommandBehavior(Commands[(int)Point].Type).PreInvoke() == false)
+                RamMachineController.Invoke(Commands[(int)Point], this);
             Point++;
             LineInvoked++;
             if(InvokedLimit>0&&LineInvoked>InvokedLimit)
@@ -122,7 +124,7 @@ namespace RamMachine
             }
             else
             {
-                throw new RamMachineRuntimeException(RamMachineHelper.GetLineNumber(Code.Raw,Code.Commands[(int)Point].ToString()),$"Trying to get unready value ({Code.Commands[(int)Point]})",null);
+                throw new RamMachineRuntimeException(commands[(int)Point].Line,$"Trying to get unready value ({Commands[(int)Point]})",null);
             }
         }
 
@@ -130,7 +132,7 @@ namespace RamMachine
         {
            if(place>=ram.Count)
             {
-                ram.AddRange(Enumerable.Range(1, (int)((place - ram.Count) + 1)).Select(item => (long?)0));
+                ram.AddRange(Enumerable.Range(1, (int)((place - ram.Count) + 1)).Select(item => ((long?)null)));
             }
             ram[(int)place] = val;
 
@@ -158,7 +160,7 @@ namespace RamMachine
         }
         void IRamMachine.Halt()
         {
-            Point = (uint)(Code.Commands.Count - 1);
+            Point = (uint)(Commands.Count - 1);
         }
 
         uint IRamMachine.GetPoint()
@@ -166,9 +168,6 @@ namespace RamMachine
             return Point;
         }
 
-        string IRamMachine.GetRaw()
-        {
-            return Code.Raw;
-        }
+      
     }
 }
